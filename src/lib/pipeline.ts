@@ -39,12 +39,24 @@ export async function generate(input: GenerateInput): Promise<GenerateResult> {
     attempt += 1;
   }
 
+
+  try {
+    await input.advanceToNextStage()
+    return { status: "ok", attempts: attempt };
+  } catch (error) {
+    return { status: "error", attempts: attempt };
+  }
+
+/* Previous code (bugged) -> Hand off call wasn't being awaited, rejection never reached return statement, hence always returning "ok"
   // Kick off the next stage and return.
   void input.advanceToNextStage().catch(() => {
-    /* ignored */
+  //  ignored 
   });
 
   return { status: "ok", attempts: attempt };
+
+*/
 }
 
 export { MAX_REVISIONS };
+
