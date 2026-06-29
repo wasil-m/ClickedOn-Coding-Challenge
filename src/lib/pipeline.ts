@@ -63,10 +63,14 @@ if (!extracted) {
 
   // Revise until the draft passes review.
   let attempt = 0;
-  while (!input.reviewPasses(attempt) && attempt < 50) {
+  while (!input.reviewPasses(attempt) && attempt < MAX_REVISIONS) { //Change to MAX_REVISIONS or it will run longer than allowed
     attempt += 1;
   }
 
+  // Check if gone past 2 attempts, so error is returned instead of ok 
+  if (attempt >= MAX_REVISIONS) {
+  return { status: "error", attempts: attempt };
+  }
 
   try {
     await input.advanceToNextStage()
