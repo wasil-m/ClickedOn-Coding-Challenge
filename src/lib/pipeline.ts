@@ -30,8 +30,36 @@ export async function generate(input: GenerateInput): Promise<GenerateResult> {
 
   // The model call can fail transiently (rate limits) or return a truncated
   // stream. Right now a single hiccup takes down the whole run.
-  const text = await mockStream(input.behavior, state);
-  extractJson(text);
+
+  //Old Code -> No checks for attempts, returns error
+  //const text = await mockStream(input.behavior, state);
+  //extractJson(text);
+
+
+
+//  Bug 2 Fix
+// Retry up to 3 times on any failure (truncated stream or rate-limit error),
+// reusing the same state so the mock's call count keeps advancing.
+// Returns "error" if we exhaust all attempts without a successful extraction.
+// This also fixed bug 3 i) as it bounds the attempts
+
+  let extracted;
+  let attempts = 0;
+
+  while (attempts < 3) {
+  try {
+    attempts += 1;
+    const text = await mockStream(input.behavior, state);
+    extracted = extractJson(text);
+    break;
+  } catch (error) {
+    // failed this time, loop will retry if attempts left
+  }
+}
+
+if (!extracted) {
+  return { status: "error", attempts: attempts };
+}
 
   // Revise until the draft passes review.
   let attempt = 0;
