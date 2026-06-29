@@ -52,7 +52,7 @@ export async function generate(input: GenerateInput): Promise<GenerateResult> {
     const text = await mockStream(input.behavior, state);
     extracted = extractJson(text);
     break;
-  } catch (error) {
+  } catch {
     // failed this time, loop will retry if attempts left
   }
 }
@@ -75,7 +75,7 @@ if (!extracted) {
   try {
     await input.advanceToNextStage()
     return { status: "ok", attempts: attempt };
-  } catch (error) {
+  } catch {
     return { status: "error", attempts: attempt };
   }
 
